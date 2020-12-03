@@ -34,6 +34,19 @@ class ValidatePasswordTestCase(unittest.TestCase):
 
         self.assertEqual(result, expected)
 
+class NewValidatePasswwordTestCase(unittest.TestCase):
+    def setUp(self):
+        self.parsed_rows = [
+            (1, 3, "a", "abcde"),
+            (1, 3, "b", "cdefg"),
+            (2, 9, "c", "ccccccccc"),
+        ]
+
+    def test_new_validate_password(self):
+        result = list(map(lambda x: new_validate_password(*x), self.parsed_rows))
+        expected = [True, False, False]
+        self.assertEqual(result, expected)
+
 class MainTestCase(unittest.TestCase):
     def setUp(self):
         self.args = {
@@ -44,8 +57,8 @@ class MainTestCase(unittest.TestCase):
             ]
         }
 
-    def test_main(self):
-        result = main(self.args)
+    def test_main_old(self):
+        result = main({**self.args, "--new": False})
         expected = 2
 
         self.assertEqual(result, expected)
