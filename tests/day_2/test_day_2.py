@@ -36,14 +36,17 @@ class ValidatePasswordTestCase(unittest.TestCase):
 
 class MainTestCase(unittest.TestCase):
     def setUp(self):
-        self.input_list = [
-            "1-3 a: abcde",
-            "1-3 b: cdefg",
-            "2-9 c: ccccccccc",
-        ]
+        self.args = {
+            "-": [
+                "1-3 a: abcde",
+                "1-3 b: cdefg",
+                "2-9 c: ccccccccc",
+            ]
+        }
 
     def test_main(self):
-        result = main(self.input_list)
+        result = main(self.args)
         expected = 2
 
         self.assertEqual(result, expected)
+

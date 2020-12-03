@@ -39,7 +39,8 @@ def parse_input(argv = sys.argv[1:]):
         argv: command arguments [default: sys.argv[1:]
 
     Returns:
-        A dictionary of processed input arguments and options
+        A tuple of dictionaries, each of which is produced by docopt(<global arguments>, <command
+        arguments>)
     """
     args = docopt.docopt(
         doc = __doc__,
@@ -97,7 +98,7 @@ def parse_input(argv = sys.argv[1:]):
 
 def main(raw_args = sys.argv[1:]):
     """
-    Process main function
+    Run the associated sub-package main function
 
     Args:
         raw_args: raw command line arguments to pass downstream [default: sys.argv[1:]]
