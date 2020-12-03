@@ -2,7 +2,7 @@
 Advent of code 2020
 
 Usage:
-    aoc2020 [options] <command> [<args>..] [-]
+    aoc2020 [options] <command> [<args>...]
     aoc2020 --help
 
 Options:
@@ -41,7 +41,11 @@ def parse_input(argv = sys.argv[1:]):
     Returns:
         A dictionary of processed input arguments and options
     """
-    args = docopt.docopt(doc = __doc__, argv = argv, help = False)
+    args = docopt.docopt(
+        doc = __doc__,
+        argv = argv,
+        options_first = True,
+    )
 
     global logger
     if args["--verbose"]:
@@ -62,6 +66,7 @@ def parse_input(argv = sys.argv[1:]):
         package = None
 
     args["package"] = package
+    logger.debug("package: {}".format(package))
 
     if args["--help"] and command:
         print(package.__doc__)
@@ -69,6 +74,11 @@ def parse_input(argv = sys.argv[1:]):
     elif args["--help"] and not command:
         print(__doc__)
         sys.exit(0)
+    elif command:
+        raw_command_args = args["<args>"]
+        logger.debug("raw_command_args: {}".format(raw_command_args))
+        command_args = docopt.docopt(package.__doc__, argv = raw_command_args)
+        logger.debug("command_args: {}".format(command_args))
 
     input_list = []
     try:
@@ -81,8 +91,8 @@ def parse_input(argv = sys.argv[1:]):
         pass
 
     input_list = list(filter(lambda x: x, input_list))
-    args["-"] = input_list
-    return(args)
+    command_args["-"] = input_list
+    return(args, command_args)
 
 
 def main(raw_args = sys.argv[1:]):
@@ -92,24 +102,11 @@ def main(raw_args = sys.argv[1:]):
     Args:
         raw_args: raw command line arguments to pass downstream [default: sys.argv[1:]]
     """
-    args = parse_input(raw_args)
+    args, command_args = parse_input(raw_args)
     logger.debug("args: {}".format(args))
     command = args["<command>"]
 
-    if command == "day_1":
-        import aoc2020.day_1 as day
-    elif command == "day_2":
-        import aoc2020.day_2 as day
-    else:
-        logger.error("Unknown command: {}".format(command))
-        print(__doc__)
-        sys.exit(1)
-
-    if args["--help"]:
-        print(day.__doc__)
-        sys.exit(0)
-
-    fun = lambda: day.main(args)
+    fun = lambda: args["package"].main(command_args)
 
     if args["--benchmark"]:
         nr_runs = int(args["--runs"])
