@@ -12,8 +12,9 @@ Options:
     -h, --help      Print this message and exit
 
 Commands:
-    day_1   Run day_1 code
-    day_2   Run day_2 code
+    day_1   Day 1: Report Repair
+    day_2   Day 2: Password Philosophy
+    day_3   Day 3: Toboggan Trajectory
 """
 
 import logging
@@ -62,6 +63,8 @@ def parse_input(argv = sys.argv[1:]):
         import aoc2020.day_1 as package
     elif command == "day_2":
         import aoc2020.day_2 as package
+    elif command == "day_3":
+        import aoc2020.day_3 as package
     else:
         command = None
         package = None
