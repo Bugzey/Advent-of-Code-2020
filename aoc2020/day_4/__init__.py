@@ -168,9 +168,9 @@ def validate_fields(passport :dict) -> bool:
         hcl = lambda x: validate_value(x, pattern = r"[0-9a-f]{6}", prefix = "#"),
         ecl = lambda x: validate_value(
             x,
-            pattern = r"amb|blu|brn|gry|grn|hzl|oth"
+            pattern = r"^amb|blu|brn|gry|grn|hzl|oth$"
         ),
-        pid = lambda x: validate_value(x, pattern = r"\d{9}"),
+        pid = lambda x: validate_value(x, pattern = r"^\d{9}$"),
         cid = lambda x: True,
     )
 
