@@ -35,8 +35,22 @@ class ReadBoardingPassTestCase(unittest.TestCase):
         expected = (357, 567, 119, 820)
         for index, item in enumerate(expected):
             with self.subTest(i = index):
-                self.assertEqual(result[index], item)
+                self.assertEqual(result[index]["seat_id"], item)
 
+class FindMissingTestCase(unittest.TestCase):
+    def setUp(self):
+        self.seat_ids = [
+            dict(seat_id = 44),
+            dict(seat_id = 46),
+            dict(seat_id = 47),
+            dict(seat_id = 48),
+            dict(seat_id = 49),
+        ]
+            
+    def test_find_missing(self):
+        result = find_missing(seat_ids = self.seat_ids)
+        expected = 45
+        self.assertEqual(result, expected)
 
 class MainTestCase(unittest.TestCase):
     def setUp(self):
@@ -47,10 +61,21 @@ class MainTestCase(unittest.TestCase):
             "BBFFBBFRLL",
         ]
 
-    def test_main(self):
+    def test_main_find_max(self):
         args = {
             "-": self.input_list,
+            "--find-missing": False,
         }
         result = main(args)
         expected = 820
         self.assertEqual(result, expected)
+
+    def test_main_find_missing(self):
+        args = {
+            "-": self.input_list,
+            "--find-missing": True,
+        }
+        result = main(args)
+        expected = 120
+        self.assertEqual(result, expected)
+
