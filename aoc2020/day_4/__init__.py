@@ -2,8 +2,10 @@
 Advent of code day 4
 
 Usage:
-    day_4 [-]
+    day_4 [options] [-]
 
+Options
+    -f, --validate-fields   Whether to validate separate fields
 """
 import logging
 import re
@@ -97,11 +99,101 @@ def validate_passport(passport :dict, ignore_fields = "cid") -> bool:
 
     return(all(valid_fields))
 
+def validate_fields(passport :dict) -> bool:
+    """
+    Apply a set of nearly standardised rules to validate each passport field
+
+    Args:
+        passport: dictionary of all parssport fields for a given passport
+
+    Returns:
+        Bool of whether all fields pass the validation tests
+    """
+    def validate_number(item :str, lower :int, upper :int, prefix = "", suffix = ""):
+        if not item:
+            return(False)
+
+        has_prefix = item.startswith(prefix)
+        has_suffix = item.endswith(suffix)
+        
+        number_part = item[len(prefix):][:(-len(suffix) if suffix else None)]
+        number_part = int(number_part) if number_part.isdigit() else None
+
+        if number_part:
+            right_range = number_part >= lower and number_part <= upper
+        else:
+            right_range = False
+
+        result = has_prefix and has_suffix and right_range
+        return(result)
+
+    def validate_value(
+        item :str,
+        length = None,
+        pattern = None,
+        prefix = "",
+        suffix = ""
+    ):
+        if not item:
+            return(False)
+
+        assert (length is not None and not pattern) or \
+            (length is None and pattern)
+
+        has_prefix = item.startswith(prefix)
+        has_suffix = item.startswith(suffix)
+
+        core_part = item[len(prefix):][:(-len(suffix) if suffix else None)]
+        
+        if length is not None:
+            right_length = len(core_part) == length
+        else:
+            right_length = True
+
+        if pattern:
+            right_pattern = re.search(pattern, core_part) is not None
+        else:
+            right_pattern = True
+
+        result = has_suffix and has_prefix and right_length and right_pattern
+        return(result) 
+
+    validation_map = dict(
+        byr = lambda x: validate_number(x, lower = 1920, upper = 2002),
+        iyr = lambda x: validate_number(x, lower = 2010, upper = 2020),
+        eyr = lambda x: validate_number(x, lower = 2020, upper = 2030),
+        hgt = lambda x: \
+            validate_number(x, lower = 150, upper = 193, suffix = "cm") | \
+            validate_number(x, lower = 59, upper = 76, suffix = "in"),
+        hcl = lambda x: validate_value(x, pattern = r"[0-9a-f]{6}", prefix = "#"),
+        ecl = lambda x: validate_value(
+            x,
+            pattern = r"amb|blu|brn|gry|grn|hzl|oth"
+        ),
+        pid = lambda x: validate_value(x, pattern = r"\d{9}"),
+        cid = lambda x: True,
+    )
+
+    valid_fields = {
+        key: validation_map[key](x = value) for key, value in passport.items()
+    }
+    logger.debug("valid_fields: {}".format(
+        {key: (passport[key], valid_fields[key]) for key in passport}
+    ))
+    all_valid_fields = all(valid_fields.values())
+    logger.debug(all_valid_fields)
+    return(all_valid_fields)
+
 def main(args):
 
     raw_passports = split_passports(args["-"])
-    passports = map(lambda x: parse_passport(x), raw_passports)
+    passports = list(map(lambda x: parse_passport(x), raw_passports))
     valid_passports = map(lambda x: validate_passport(x), passports)
+
+    if args["--validate-fields"]:
+        valid_passports = list(valid_passports)
+        valid_fields = map(lambda x: validate_fields(x), passports)
+        valid_passports = map(lambda x, y: x and y, valid_passports, valid_fields)
 
     result = sum(valid_passports)
     return(result)
