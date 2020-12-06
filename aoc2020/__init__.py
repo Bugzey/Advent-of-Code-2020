@@ -128,6 +128,10 @@ def main(raw_args = sys.argv[1:]):
         logger.debug("Running function normally")
         result = fun()
 
-    print(result)
+    if type(result) in [list, tuple]:
+        print(*result, sep = "\n")
+    else:
+        print(result)
+
     return(result)
 

@@ -2,14 +2,20 @@
 Advent of code 2020 Day 3 package
 
 Usage:
-    day_1 [options] [-]
+    day_1 [options] [(-r RIGHT -d DOWN)]...  [-]
+    day_1 [--help]
 
 Options:
     -d, --step-down=STEP    How many steps down to go [default: 1]
     -r, --step-right=STEP    How many steps rigth to go [default: 3]
+    --visualise     Whether ot visualise the result
+    --save-to=FILE     Where to save the visualisation
     -h, --help      Print this message and exit
 """
+from functools import reduce
 import logging
+import os
+
 logger = logging.getLogger(__name__)
 
 def parse_map(input_list):
@@ -31,7 +37,7 @@ def parse_map(input_list):
     ))
     return(map_width, map_height, parsed_map)
 
-def count_trees(map_width, map_height, parsed_map, step_right, step_down):
+def get_positions(map_width, map_height, parsed_map, step_right, step_down):
     """
     Count occurences where we would hit a tree when moving down and left at particular steps
     along a parsed integer map
@@ -49,22 +55,52 @@ def count_trees(map_width, map_height, parsed_map, step_right, step_down):
     down_count = map_height // step_down
     right_count = map_width // step_right
 
+    logger.debug("step_down: {}, step_right: {}".format(
+        step_down, step_right)
+    )
     logger.debug("down_count: {}, right_count: {}".format(
         down_count, right_count
     ))
-    down_range = range(0, map_height, step_down)
+    down_range = range(0, down_count * step_down, step_down)
     right_range = range(0, down_count * step_right, step_right)
     logger.debug("down_range: {}, right_range: {}".format(
         down_range, right_range
     ))
 
     step_positions = list(map(lambda x, y: (x, y % map_width), down_range, right_range))
-
     logger.debug("step_positions. {}".format(step_positions))
 
+    return(step_positions)
+
+def count_trees(parsed_map, step_positions):
     tree_hits = map(lambda x: x[1] in parsed_map[x[0]], step_positions)
-    result = sum(tree_hits)
+    sum_trees = sum(tree_hits)
+    logger.debug("sum_trees: {}".format(sum_trees))
+    return(sum_trees)
+
+def visualise_run(raw_map :list, step_positions):
+    """
+    Show which positions in the input map are hit
+
+    Args:
+        raw_map: the input map as a list of strings
+        step_positions: list of tuples of positions on the map
+
+    Returns:
+        The original raw_map with positions overlapping with trees marked as X and non-overlapping
+        positions as O
+    """
+    result = raw_map.copy()
+    for x, y in step_positions:
+        row = result[x]
+        logger.debug("x: {}, y: {}".format(x, y))
+        is_tree = result[x][y] == "#"
+        result[x] = "{}{}{}".format(
+            row[:y], ("X" if is_tree else "O"), row[(y + 1):]
+        )
+
     return(result)
+
 
 def main(args):
     """
@@ -77,16 +113,51 @@ def main(args):
         The number of trees encountered
     """
     input_list = args["-"]
-    step_down = int(args["--step-down"])
-    step_right = int(args["--step-right"])
+    steps = list(map(
+        lambda x, y: dict(step_down = int(x), step_right = int(y)),
+        args["--step-down"],
+        args["--step-right"],
+    ))
     map_width, map_height, parsed_map = parse_map(input_list)
 
-    tree_count = count_trees(
-        map_width = map_width,
-        map_height = map_height,
-        parsed_map = parsed_map,
-        step_down = step_down,
-        step_right = step_right,
+    step_positions = list(map(
+        lambda step: get_positions(
+            map_width = map_width,
+            map_height = map_height,
+            parsed_map = parsed_map,
+            step_down = step["step_down"],
+            step_right = step["step_right"],
+        ),
+        steps
+    ))
+
+    if args["--visualise"]:
+        if len(steps) > 1:
+            logger.warning(
+                "Only visualising first step pair: {}".format(steps[0])
+            )
+        visualised_map = visualise_run(
+            raw_map = args["-"],
+            step_positions = step_positions[0],
+        )
+
+    if args["--save-to"]:
+        output_file_name = os.path.expanduser(args["--save-to"])
+        logger.info("Saving output to: {}".format(output_file_name))
+        with open(output_file_name , "w") as cur_file:
+            cur_file.write("\n".join(visualised_map))
+
+    elif args["--visualise"]:
+        print(*visualised_map, sep = "\n")
+
+    trees = list(map(lambda x: count_trees(parsed_map, x), step_positions))
+    message_list = (
+        "steps: {}, trees: {}".format(steps, trees) \
+        for steps, trees in zip(steps, trees)
     )
-    return(tree_count)
+    logger.debug(", ".join(message_list))
+    total_tree_count = reduce(lambda x, y: x * y, trees)
+
+    result = [*trees, total_tree_count]
+    return(result)
 
