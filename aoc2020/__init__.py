@@ -15,6 +15,7 @@ Commands:
     day_1   Day 1: Report Repair
     day_2   Day 2: Password Philosophy
     day_3   Day 3: Toboggan Trajectory
+    day_4   Day 4: Passport Processing
 """
 
 import logging
@@ -65,6 +66,8 @@ def parse_input(argv = sys.argv[1:]):
         import aoc2020.day_2 as package
     elif command == "day_3":
         import aoc2020.day_3 as package
+    elif command == "day_4":
+        import aoc2020.day_4 as package
     else:
         command = None
         package = None
@@ -94,7 +97,10 @@ def parse_input(argv = sys.argv[1:]):
     except EOFError:
         pass
 
-    input_list = list(filter(lambda x: x, input_list))
+    #input_list = list(filter(lambda x: x, input_list))
+    while not input_list[-1]:
+        _ = input_list.pop()
+
     command_args["-"] = input_list
     return(args, command_args)
 
