@@ -17,7 +17,26 @@ Commands:
     day_3   Day 3: Toboggan Trajectory
     day_4   Day 4: Passport Processing
     day_5   Day 5: Binary Boarding
-    day_6   Day 6: Day 6: Custom Customs
+    day_6   Day 6: Custom Customs
+    day_7   Day 7: Handy Haversacks
+    day_8   
+    day_9   
+    day_11   
+    day_12   
+    day_13   
+    day_14   
+    day_15   
+    day_16   
+    day_17   
+    day_18   
+    day_19   
+    day_20   
+    day_21   
+    day_22   
+    day_23   
+    day_24   
+    day_25   
+    day_26   
 """
 
 import logging
@@ -74,6 +93,8 @@ def parse_input(argv = sys.argv[1:]):
         import aoc2020.day_5 as package
     elif command == "day_6":
         import aoc2020.day_6 as package
+    elif command == "day_7":
+        import aoc2020.day_7 as package
     else:
         command = None
         package = None
