@@ -42,7 +42,7 @@ class CheckContainsTestCase(unittest.TestCase):
                 bags = self.bags,
                 source_bag = x,
                 target_bag = self.target_bag,
-            ),
+            )[0],
             self.bags.keys()
         ))
         logger.debug("result_list: {}".format(result_list))
@@ -50,13 +50,31 @@ class CheckContainsTestCase(unittest.TestCase):
         result = sum(result_list)
         self.assertEqual(result, expected)
 
-class SumContainsTestCase(unittest.TestCase):
+class CountPossibilitiesTestCase(unittest.TestCase):
     def setUp(self):
         self.bags = parse_input(ITEMS)
         self.target_bag = "shiny gold bag"
 
-    def test_sum_contains(self):
-        result = sum_contains(self.bags, self.target_bag)
+    def test_count_possibilities(self):
+        result = count_possibilities(self.bags, self.target_bag)
         expected = 4
         self.assertEqual(result, expected)
 
+class SumContainsTestCase(unittest.TestCase):
+    def setUp(self):
+        contains_input = [
+            "shiny gold bags contain 2 dark red bags.",
+            "dark red bags contain 2 dark orange bags.",
+            "dark orange bags contain 2 dark yellow bags.",
+            "dark yellow bags contain 2 dark green bags.",
+            "dark green bags contain 2 dark blue bags.",
+            "dark blue bags contain 2 dark violet bags.",
+            "dark violet bags contain no other bags.",
+        ]
+        self.bags = parse_input(contains_input)
+        self.target_bag = "shiny gold bag"
+
+    def test_sum_contains(self):
+        result = sum_contains(bags = self.bags, target_bag = self.target_bag)
+        expected = 126
+        self.assertEqual(result, expected)

@@ -6,6 +6,7 @@ Usage:
 
 Options:
     -t --target-bag=BAG  Target bag to look for [default: shiny gold bag]
+    -s, --sum-content   Count all possible bags contained in the target_bag
     -h, --help  Print this help message and exit
 """
 from functools import reduce
@@ -42,8 +43,9 @@ def parse_input(input_list :list) -> dict:
     logger.debug("result: {}".format(result))
     return(result)
 
-def check_contains(bags, source_bag, target_bag):
+def check_contains(bags, source_bag, target_bag, stop_when_found = True):
     def recurse(bags, cur_bag, target_bag, visited = []):
+        visited.append(cur_bag)
         possible_bags = bags[cur_bag].keys()
         if not possible_bags:
             return False, visited
@@ -52,10 +54,9 @@ def check_contains(bags, source_bag, target_bag):
 
         result = False
         for bag in possible_bags:
-            if bag in visited:
+            if bag in visited and not stop_when_found:
                 continue
 
-            visited.append(bag)
             new_result, visited = recurse(bags, bag, target_bag, visited)
             result = result or new_result
 
@@ -65,24 +66,40 @@ def check_contains(bags, source_bag, target_bag):
     logger.debug("source_bag: {}, result: {}, visited: {}".format(
         source_bag, result, visited
     ))
-    return(result)
+    return(result, visited)
 
-def sum_contains(bags, target_bag):
+def count_possibilities(bags, target_bag):
     result_list = map(lambda x: \
         check_contains(
             bags = bags,
             source_bag = x,
             target_bag = target_bag,
-        ),
+        )[0], # Result
         bags.keys()
     )
     result = sum(result_list)
+    return(result)
+
+def sum_contains(bags, target_bag):
+    _, bag_ids = check_contains(
+        bags = bags,
+        source_bag = target_bag,
+        target_bag = None, # Actually None
+        stop_when_found = False,
+    )
+    contained_bags = list(map(lambda x: bags.get(x, 0), bag_ids))
+    logger.debug("contained_bags: {}".format(contained_bags))
+    result = sum(map(lambda x: sum(x.values()), contained_bags))
     return(result)
 
 def main(args):
     input_list = args["-"]
     target_bag = args.get("--target-bag")
     bags = parse_input(input_list)
-    result = {key: check_contains(bags, key, target_bag) for key in bags}
+    if not args["--sum-content"]:
+        result = {target_bag: count_possibilities(bags, target_bag)}
+    else:
+        result = {target_bag: sum_countains(bags, target_bag)}
+
     return(sum(result.values()))
 
